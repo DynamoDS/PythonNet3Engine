@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<ProjectGuid>{F1541C2D-80A9-4FE7-8D9E-75A8B9FF3479}</ProjectGuid>
+		<OutputType>Library</OutputType>
+		<AppDesignerFolder>Properties</AppDesignerFolder>
+		<RootNamespace>DSPythonNet3</RootNamespace>
+		<AssemblyName>DSPythonNet3</AssemblyName>
+		<OutputPath>$(SolutionDir)\package_output\DSPythonNet3\extra\</OutputPath>
+		<DotNet>net8.0</DotNet>
+		<TargetFramework>$(DotNet)</TargetFramework>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	</PropertyGroup>
+	<PropertyGroup>
+		<NoWarn>MSB3539;CS1591;NUnit2005;NUnit2007;CS0618;CS0612;CS0672</NoWarn>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="DynamoVisualProgramming.Core" Version="3.3.0-beta6171" />
+		<PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="3.3.0-beta6171" />
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="Python.Deployment">
+			<HintPath>..\extern\Python\Python.Deployment.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Python.Included">
+			<HintPath>..\extern\Python\Python.Included.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Python.Runtime">
+			<HintPath>..\extern\Python\Python.Runtime.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Update="Properties\Resources.Designer.cs">
+			<AutoGen>True</AutoGen>
+			<DesignTime>True</DesignTime>
+			<DependentUpon>Resources.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Properties\Resources.en-US.Designer.cs">
+			<AutoGen>True</AutoGen>
+			<DesignTime>True</DesignTime>
+			<DependentUpon>Resources.en-US.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="Properties\Resources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Properties\Resources.en-US.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.en-US.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
+</Project>
