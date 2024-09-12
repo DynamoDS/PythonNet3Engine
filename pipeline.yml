@@ -32,7 +32,7 @@ deployment:
   -
     type: customized
     scripts:
-      - "pwsh.exe -ExecutionPolicy ByPass -Command Compress-Archive -Path package_output/DSPythonNet3 -DestinationPath ./DSPythonNet3.zip"
+      - zip -r DSPythonNet3.zip package_output/DSPythonNet3
   -
     type: github
     outputs:
