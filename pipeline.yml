@@ -6,7 +6,6 @@ create_pr_release_to_master: true
 
 env:
   - GITHUB_ACCESS_TOKEN_ID: github_access_token_acsbuildguy
-  - RELEASE_BRANCHES: ".*"
 
 # code_analysis:
 #   sonarqube:
@@ -35,5 +34,6 @@ deployment:
       - zip -r DSPythonNet3.zip package_output/DSPythonNet3
   -
     type: github
+    allow_branches: ".*"
     outputs:
       - DSPythonNet3.zip
