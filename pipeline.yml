@@ -1,0 +1,38 @@
+version: 1.4.0
+pipeline_os: linux
+#update_changelog_on_release: true
+create_github_release: true
+create_pr_release_to_master: true
+
+env:
+  - GITHUB_ACCESS_TOKEN_ID: github_access_token_acsbuildguy
+
+# code_analysis:
+#   sonarqube:
+#     source_encoding: UTF-8
+#     src: .
+#     coverage_reports:
+#       - coverage.info
+
+build:
+  -
+    customized_builder_image:
+      registry: artifactory
+      url: artifactory.dev.adskengineer.net/cloudos-community/amzl2/dotnet-8.0-sdk:latest
+    scripts:
+      - dotnet msbuild DynamoPythonNet3.sln -p:Configuration=Release -p:EnableWindowsTargeting=true -restore
+
+deployment:
+  -
+    type: sign
+    files_to_sign:
+      - package_output/DSPythonNet3/**/DSPythonNet3*.dll
+      - package_output/DSPythonNet3/**/Python.*.dll
+  -
+    type: customized
+    scripts:
+      - "pwsh.exe -ExecutionPolicy ByPass -Command Compress-Archive -Path package_output/DSPythonNet3 -DestinationPath ./DSPythonNet3.zip"
+  -
+    type: github
+    outputs:
+      - DSPythonNet3.zip
