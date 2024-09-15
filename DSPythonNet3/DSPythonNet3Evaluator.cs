@@ -327,7 +327,12 @@ for modname,mod in sys.modules.copy().items():
             {
                 try
                 {
-                    Python.Runtime.Runtime.PythonDLL = Python.Included.Installer.PYTHON_VERSION + ".dll";
+                    // First try the custom ways of supplying the python dll name (environment variables, or static API calls)
+                    if (string.IsNullOrEmpty(Runtime.PythonDLL))
+                    {
+                        Runtime.PythonDLL = Python.Included.Installer.PYTHON_VERSION + ".dll";
+                    }
+                    
                     Python.Included.Installer.SetupPython().Wait();
                     isPythonInstalled = true;
                 }
