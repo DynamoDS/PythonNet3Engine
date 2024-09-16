@@ -17,6 +17,7 @@
 	<ItemGroup>
 		<PackageReference Include="DynamoVisualProgramming.Core" Version="3.3.0-beta6171" />
 		<PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="3.3.0-beta6171" />
+    <PackageReference Include="pythonnet" Version="3.1.0-preview*" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="Python.Deployment">
@@ -25,10 +26,6 @@
 		</Reference>
 		<Reference Include="Python.Included">
 			<HintPath>..\extern\Python\Python.Included.dll</HintPath>
-			<Private>True</Private>
-		</Reference>
-		<Reference Include="Python.Runtime">
-			<HintPath>..\extern\Python\Python.Runtime.dll</HintPath>
 			<Private>True</Private>
 		</Reference>
 	</ItemGroup>
