@@ -7,7 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DSPythonNet3Extension", "Dy
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DSPythonNet3Empty", "DynamoPythonNet3Empty\DSPythonNet3Empty.csproj", "{2AEE36F0-B188-464B-B6E9-54C8C7057460}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSPythonNet3", "DSPythonNet3\DSPythonNet3.csproj", "{582DA7FA-C36E-43AC-B76A-3A6F563328F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DSPythonNet3", "DSPythonNet3\DSPythonNet3.csproj", "{582DA7FA-C36E-43AC-B76A-3A6F563328F9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8C9CB9FD-F6BC-41D4-A587-0558846B4A31}"
+	ProjectSection(SolutionItems) = preProject
+		nuget.config = nuget.config
+		pipeline.yml = pipeline.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -10,13 +10,15 @@
 		<TargetFramework>$(DotNet)</TargetFramework>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
 	<PropertyGroup>
 		<NoWarn>MSB3539;CS1591;NUnit2005;NUnit2007;CS0618;CS0612;CS0672</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="DynamoVisualProgramming.Core" Version="3.3.0-beta6171" />
-		<PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="3.3.0-beta6171" />
+		<PackageReference Include="DynamoVisualProgramming.Core" Version="3.3.0-beta6171" ExcludeAssets="runtime" />
+		<PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="3.3.0-beta6171" ExcludeAssets="runtime" />
+    <PackageReference Include="pythonnet" Version="3.1.0-preview-ADSK-*" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="Python.Deployment">
@@ -25,10 +27,6 @@
 		</Reference>
 		<Reference Include="Python.Included">
 			<HintPath>..\extern\Python\Python.Included.dll</HintPath>
-			<Private>True</Private>
-		</Reference>
-		<Reference Include="Python.Runtime">
-			<HintPath>..\extern\Python\Python.Runtime.dll</HintPath>
 			<Private>True</Private>
 		</Reference>
 	</ItemGroup>
