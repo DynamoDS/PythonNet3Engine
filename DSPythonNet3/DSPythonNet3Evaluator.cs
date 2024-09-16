@@ -333,6 +333,13 @@ for modname,mod in sys.modules.copy().items():
                         Runtime.PythonDLL = Python.Included.Installer.PYTHON_VERSION + ".dll";
                     }
                     
+
+                    var disableEmbedded = Environment.GetEnvironmentVariable("DYN_DISABLE_PYNET_EMBEDDED");
+                    if (!string.IsNullOrEmpty(disableEmbedded))
+                    {
+                        Python.Included.PythonEnv.DeployEmbeddedPython = true;
+                    }
+
                     Python.Included.Installer.SetupPython().Wait();
                     isPythonInstalled = true;
                 }
