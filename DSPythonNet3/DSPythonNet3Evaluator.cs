@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Autodesk.DesignScript.Runtime;
 using DSPythonNet3.Encoders;
 using Dynamo.Events;
@@ -290,7 +291,7 @@ for modname,mod in sys.modules.copy().items():
                             if (!string.IsNullOrEmpty(traceBack))
                             {
                                 // Throw a new error including trace back info added to the message
-                                throw new InvalidOperationException($"{e.Message} {traceBack}", e);
+                                throw new InvalidOperationException($"{e.Message}\n{traceBack}", e);
                             }
                             else
                             {
@@ -439,19 +440,19 @@ sys.stdout = DynamoStdOut({0})
         /// <returns>Trace back message</returns>
         private static string GetTraceBack(Exception e)
         {
-            var pythonExc = e as PythonException;
-            if (!(e is PythonException))
+            if (e is not PythonException pythonExc)
             {
                 return null;
             }
 
             // Return the value of the trace back field (private)
-            var field = pythonExc.Traceback;
+            var field = typeof(PythonException).GetMethod("TracebackToString", BindingFlags.NonPublic | BindingFlags.Static);
             if (field == null)
             {
                 throw new NotSupportedException(Properties.Resources.InternalErrorTraceBackInfo);
             }
-            return field.ToString();
+
+            return (string)field.Invoke(pythonExc, [pythonExc.Traceback]);
         }
 
         #region Marshalling
