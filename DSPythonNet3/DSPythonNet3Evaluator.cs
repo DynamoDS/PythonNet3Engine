@@ -440,7 +440,7 @@ sys.stdout = DynamoStdOut({0})
         /// <returns>Trace back message</returns>
         private static string GetTraceBack(Exception e)
         {
-            if (e is not PythonException pythonExc)
+            if (e is not PythonException pythonExc || pythonExc.Traceback == null)
             {
                 return null;
             }
