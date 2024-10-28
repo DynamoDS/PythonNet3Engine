@@ -9,11 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DynamoVisualProgramming.Core" Version="3.3.0-beta6171">
+    <PackageReference Include="DynamoVisualProgramming.Core" Version="3.4.0-beta6616">
       <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets></ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="3.3.0-beta6171">
+    <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="3.4.0-beta6616">
 		   <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets></ExcludeAssets>
 		</PackageReference>
