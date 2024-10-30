@@ -1,12 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-<PropertyGroup>
-	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-	<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-	<OutputPath>$(SolutionDir)\package_output\DSPythonNet3\bin\</OutputPath>
-	<TargetFramework>net8.0</TargetFramework>
-	<ImplicitUsings>enable</ImplicitUsings>
-	<Nullable>enable</Nullable>
-</PropertyGroup>
-
+	<PropertyGroup>
+		<OutputPath>$(BuildOutput)bin\</OutputPath>
+	</PropertyGroup>
 </Project>

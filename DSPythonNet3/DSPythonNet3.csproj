@@ -3,23 +3,10 @@
 		<ProjectGuid>{F1541C2D-80A9-4FE7-8D9E-75A8B9FF3479}</ProjectGuid>
 		<OutputType>Library</OutputType>
 		<AppDesignerFolder>Properties</AppDesignerFolder>
-		<RootNamespace>DSPythonNet3</RootNamespace>
-		<AssemblyName>DSPythonNet3</AssemblyName>
-		<OutputPath>$(SolutionDir)\package_output\DSPythonNet3\extra\</OutputPath>
-		<DotNet>net8.0</DotNet>
-		<TargetFramework>$(DotNet)</TargetFramework>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-	</PropertyGroup>
-	<PropertyGroup>
+		<OutputPath>$(BuildOutput)extra\</OutputPath>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<NoWarn>MSB3539;CS1591;NUnit2005;NUnit2007;CS0618;CS0612;CS0672</NoWarn>
 	</PropertyGroup>
-	<ItemGroup>
-		<PackageReference Include="DynamoVisualProgramming.Core" Version="3.4.0-beta6616" ExcludeAssets="runtime" />
-		<PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="3.4.0-beta6616" ExcludeAssets="runtime" />
-    <PackageReference Include="pythonnet" Version="3.1.0-preview-ADSK-*" />
-	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="Python.Deployment">
 			<HintPath>..\extern\Python\Python.Deployment.dll</HintPath>
@@ -29,6 +16,12 @@
 			<HintPath>..\extern\Python\Python.Included.dll</HintPath>
 			<Private>True</Private>
 		</Reference>
+		<InternalsVisibleTo Include="PythonMigrationViewExtension" />
+		<InternalsVisibleTo Include="DynamoPythonTests" />
+		
+		<PackageReference Include="DynamoVisualProgramming.Core" Version="$(DynamoPackageVersion)" ExcludeAssets="runtime" />
+		<PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="$(DynamoPackageVersion)" ExcludeAssets="runtime" />
+		<PackageReference Include="pythonnet" Version="3.1.0-preview-ADSK-*" />
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Update="Properties\Resources.Designer.cs">
@@ -52,4 +45,15 @@
 			<LastGenOutput>Resources.en-US.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
 	</ItemGroup>
+	<ItemGroup>
+		<None Update="pkg.json">
+			<TargetPath>..\%(Filename)%(Extension)</TargetPath>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<Target Name="PrepareExtension" AfterTargets="AfterBuild">
+		<WriteLinesToFile File="$(BuildOutput)pkg.json" Lines="$([System.IO.File]::ReadAllText($(BuildOutput)pkg.json).Replace('$Version$','$(Version)').Replace('$DynamoVersion$','$(DynamoVersion)').Replace('$DllVersion$','$(MS_PACKAGE_VERSION)'))" Overwrite="true" Encoding="Unicode" />
+	</Target>
+
 </Project>

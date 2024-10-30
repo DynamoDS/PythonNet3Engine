@@ -1,0 +1,24 @@
+<Project>
+	<PropertyGroup>
+		<Company>Autodesk, Inc</Company>
+		<Owners>$(Company)</Owners>
+		<Authors>Dynamo</Authors>
+		<Product>Dynamo</Product>
+		<Copyright>Copyright © Autodesk, Inc 2024</Copyright>
+		
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<!-- Using `VersionPrefix` allows specifying a `version-suffix` argument when packing for beta releases. -->
+		<VersionPrefix>1.4.0</VersionPrefix>
+		<DynamoPackageVersion>3.4.0-beta6616</DynamoPackageVersion>
+		<DynamoVersion>3.4</DynamoVersion>
+		
+		<!--Aids in code analysis.-->
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<BuildOutput>$(SolutionDir)\package_output\DSPythonNet3\</BuildOutput>
+    </PropertyGroup>
+</Project>
