@@ -247,7 +247,7 @@ for modname,mod in sys.modules.copy().items():
                 return null;
             }
 
-            InstallPython();
+            InstallPythonAsync().Wait();
             if (!PythonEngine.IsInitialized)
             {
                 PythonEngine.Initialize();
@@ -322,7 +322,7 @@ for modname,mod in sys.modules.copy().items():
         /// NOTE: Calling SetupPython multiple times will add the install location to the path many times,
         /// potentially causing the environment variable to overflow.
         /// </summary>
-        internal static void InstallPython()
+        internal static async Task InstallPythonAsync()
         {
             if (!isPythonInstalled)
             {
@@ -340,7 +340,11 @@ for modname,mod in sys.modules.copy().items():
                         Python.Included.PythonEnv.DeployEmbeddedPython = false;
                     }
 
-                    Python.Included.Installer.SetupPython().Wait();
+                    await Python.Included.Installer.SetupPython();
+
+                    Assembly wheelsAssembly = Assembly.LoadFile(Path.Join(Path.GetDirectoryName(Assembly.GetAssembly(typeof(DSPythonNet3Evaluator)).Location), "DSPythonNet3Wheels.dll")    );
+                    await Task.WhenAll(wheelsAssembly.GetManifestResourceNames().Where(x => x.Contains(".whl")).Select(wheel => Python.Included.Installer.InstallWheel(wheelsAssembly, wheel)));
+
                     isPythonInstalled = true;
                 }
                 catch (Exception e)
@@ -438,7 +442,7 @@ sys.stdout = DynamoStdOut({0})
         /// </summary>
         /// <param name="e">Exception to inspect</param>
         /// <returns>Trace back message</returns>
-        private static string GetTraceBack(Exception e)
+        private static string? GetTraceBack(Exception e)
         {
             if (e is not PythonException pythonExc || pythonExc.Traceback == null)
             {
@@ -452,7 +456,7 @@ sys.stdout = DynamoStdOut({0})
                 throw new NotSupportedException(Properties.Resources.InternalErrorTraceBackInfo);
             }
 
-            return (string)field.Invoke(pythonExc, [pythonExc.Traceback]);
+            return (string?)field.Invoke(pythonExc, [pythonExc.Traceback]);
         }
 
         #region Marshalling

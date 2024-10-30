@@ -39,6 +39,9 @@
 		</EmbeddedResource>
 	</ItemGroup>
 	<ItemGroup>
+		<ProjectReference Include="..\DSPythonNet3Wheels\DSPythonNet3Wheels.csproj" />
+	</ItemGroup>
+	<ItemGroup>
 		<None Update="pkg.json">
 			<TargetPath>..\%(Filename)%(Extension)</TargetPath>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

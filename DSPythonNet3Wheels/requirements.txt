@@ -1,0 +1,14 @@
+contourpy == 1.*
+cycler == 0.12.*
+et_xmlfile == 2.*
+fonttools == 4.*
+kiwisolver == 1.*
+matplotlib == 3.*
+numpy == 2.*
+pillow == 11.*
+pyparsing == 3.*
+python-dateutil == 2.*
+pytz
+pandas == 2.*
+openpyxl == 3.*
+scipy == 1.*
