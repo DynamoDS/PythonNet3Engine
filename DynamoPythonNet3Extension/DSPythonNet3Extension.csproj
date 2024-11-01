@@ -1,28 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputPath>$(BuildOutput)extra\</OutputPath>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath>$(SolutionDir)\package_output\DSPythonNet3\extra\</OutputPath>
-	<AssemblyVersion>1.4.0</AssemblyVersion>
-  </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="DynamoVisualProgramming.Core" Version="$(DynamoPackageVersion)" PrivateAssets="all" />
+		<PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="$(DynamoPackageVersion)" PrivateAssets="all" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="DynamoVisualProgramming.Core" Version="3.4.0-beta6616">
-      <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets></ExcludeAssets>
-    </PackageReference>
-    <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="3.4.0-beta6616">
-		   <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets></ExcludeAssets>
-		</PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="DSPythonNet3Extension_ExtensionDefinition.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
+	<ItemGroup>
+		<None Update="DSPythonNet3Extension_ExtensionDefinition.xml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 </Project>

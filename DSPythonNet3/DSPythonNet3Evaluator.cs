@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Reflection;
 using Autodesk.DesignScript.Runtime;
 using DSPythonNet3.Encoders;
@@ -247,12 +246,18 @@ for modname,mod in sys.modules.copy().items():
                 return null;
             }
 
-            InstallPython();
+            InstallPythonAsync().Wait();
             if (!PythonEngine.IsInitialized)
             {
                 PythonEngine.Initialize();
                 PythonEngine.BeginAllowThreads();
-                
+
+                using (Py.GIL())
+                using (PyModule scope = Py.CreateScope())
+                {
+                    scope.Exec("import sys" + Environment.NewLine + "path = str(sys.path)");
+                    path = scope.Get<string>("path");
+                }
             }
                 using (Py.GIL())
                 {
@@ -263,8 +268,8 @@ for modname,mod in sys.modules.copy().items():
 
                     using (PyModule scope = Py.CreateScope())
                     {
-                        // Reset the 'sys.path' value to the default python paths on node evaluation. 
-                        var pythonNodeSetupCode = "import sys" + Environment.NewLine + "sys.path = sys.path[0:3]";
+                        // Reset the 'sys.path' value to the default python paths on node evaluation. See https://github.com/DynamoDS/Dynamo/pull/10977. 
+                        var pythonNodeSetupCode = "import sys" + Environment.NewLine + $"sys.path = {path}";
                         scope.Exec(pythonNodeSetupCode);
 
                         ProcessAdditionalBindings(scope, bindingNames, bindingValues);
@@ -322,7 +327,7 @@ for modname,mod in sys.modules.copy().items():
         /// NOTE: Calling SetupPython multiple times will add the install location to the path many times,
         /// potentially causing the environment variable to overflow.
         /// </summary>
-        internal static void InstallPython()
+        internal static async Task InstallPythonAsync()
         {
             if (!isPythonInstalled)
             {
@@ -340,7 +345,11 @@ for modname,mod in sys.modules.copy().items():
                         Python.Included.PythonEnv.DeployEmbeddedPython = false;
                     }
 
-                    Python.Included.Installer.SetupPython().Wait();
+                    await Python.Included.Installer.SetupPython();
+
+                    Assembly wheelsAssembly = Assembly.LoadFile(Path.Join(Path.GetDirectoryName(Assembly.GetAssembly(typeof(DSPythonNet3Evaluator)).Location), "DSPythonNet3Wheels.dll")    );
+                    await Task.WhenAll(wheelsAssembly.GetManifestResourceNames().Where(x => x.Contains(".whl")).Select(wheel => Python.Included.Installer.InstallWheel(wheelsAssembly, wheel)));
+
                     isPythonInstalled = true;
                 }
                 catch (Exception e)
@@ -438,7 +447,7 @@ sys.stdout = DynamoStdOut({0})
         /// </summary>
         /// <param name="e">Exception to inspect</param>
         /// <returns>Trace back message</returns>
-        private static string GetTraceBack(Exception e)
+        private static string? GetTraceBack(Exception e)
         {
             if (e is not PythonException pythonExc || pythonExc.Traceback == null)
             {
@@ -452,7 +461,7 @@ sys.stdout = DynamoStdOut({0})
                 throw new NotSupportedException(Properties.Resources.InternalErrorTraceBackInfo);
             }
 
-            return (string)field.Invoke(pythonExc, [pythonExc.Traceback]);
+            return (string?)field.Invoke(pythonExc, [pythonExc.Traceback]);
         }
 
         #region Marshalling
@@ -661,6 +670,7 @@ sys.stdout = DynamoStdOut({0})
 
         private DataMarshaler inputMarshaler;
         private DataMarshaler outputMarshaler;
+        private string path;
 
         #endregion
 

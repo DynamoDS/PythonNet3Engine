@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputPath>$(BuildOutput)extra\</OutputPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="Resources\*.whl" />
+		<EmbeddedResource Include="Resources\*.whl" />
+	</ItemGroup>
+
+	<Target Name="UpdateWheels">
+		<RemoveDir Directories="Resources" />
+		<MakeDir Directories="Resources" />
+		<Exec Command="pip download --only-binary :all: --platform win_amd64 --implementation cp --python-version 3.11 --dest Resources --no-cache -r requirements.txt" />
+	</Target>
+</Project>

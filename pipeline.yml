@@ -19,6 +19,12 @@ build:
   -
     scripts:
       - dotnet msbuild DynamoPythonNet3.sln -p:Configuration=Release -restore
+      
+ci_test:
+  tests:
+    -
+      scripts:
+        - dotnet test
 
 deployment:
   -

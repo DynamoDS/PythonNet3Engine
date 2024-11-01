@@ -1,0 +1,27 @@
+{
+    "license": "MIT",
+    "file_hash": null,
+    "name": "DSPythonNet3",
+    "version": "$Version$",
+    "description": "***This is PythonNet3 version***",
+    "group": "",
+    "keywords": [
+        "pythonnet",
+        "python",
+        "python3"
+    ],
+    "dependencies": [],
+    "host_dependencies": [],
+    "contents": "",
+    "engine_version": "$DynamoVersion$",
+    "engine": "dynamo",
+    "engine_metadata": "",
+    "site_url": "https://dynamobim.org/",
+    "repository_url": "https://github.com/DynamoDS/Dynamo",
+    "contains_binaries": true,
+    "node_libraries": [
+        "DSPythonNet3Empty, Version=$DllVersion$, Culture=neutral, PublicKeyToken=null"
+    ],
+    "copyright_holder": "DynamoTeam",
+    "copyright_year": "2024"
+}
