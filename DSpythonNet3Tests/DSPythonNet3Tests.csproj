@@ -3,23 +3,19 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+	<AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+	<AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
+	<BuildOutput>$(MsBuildThisFileDirectory)bin</BuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="NUnit" Version="3.14.0" />
     <PackageReference Include="NUnit.Analyzers" Version="3.9.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
 	  
-    <PackageReference Include="DynamoVisualProgramming.Core" Version="$(DynamoPackageVersion)">
-      <ExcludeAssets>runtime</ExcludeAssets>
-	  <IncludeAssets>compile; build; native; contentfiles; analyzers</IncludeAssets>
-	</PackageReference>
-    <PackageReference Include="DynamoVisualProgramming.Tests" Version="$(DynamoPackageVersion)">
-	  <ExcludeAssets>runtime</ExcludeAssets>
-	  <IncludeAssets>compile; build; native; contentfiles; analyzers</IncludeAssets>
-	</PackageReference>
+    <PackageReference Include="DynamoVisualProgramming.Core" Version="$(DynamoPackageVersion)" />
+	<PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="$(DynamoPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
