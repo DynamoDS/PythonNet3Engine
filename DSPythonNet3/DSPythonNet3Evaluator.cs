@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Reflection;
 using Autodesk.DesignScript.Runtime;
 using DSPythonNet3.Encoders;
@@ -250,7 +251,13 @@ for modname,mod in sys.modules.copy().items():
             {
                 PythonEngine.Initialize();
                 PythonEngine.BeginAllowThreads();
-                
+
+                using (Py.GIL())
+                using (PyModule scope = Py.CreateScope())
+                {
+                    scope.Exec("import sys" + Environment.NewLine + "path = str(sys.path)");
+                    path = scope.Get<string>("path");
+                }
             }
                 using (Py.GIL())
                 {
@@ -261,8 +268,8 @@ for modname,mod in sys.modules.copy().items():
 
                     using (PyModule scope = Py.CreateScope())
                     {
-                        // Reset the 'sys.path' value to the default python paths on node evaluation. 
-                        var pythonNodeSetupCode = "import sys" + Environment.NewLine + "sys.path = sys.path[0:3]";
+                        // Reset the 'sys.path' value to the default python paths on node evaluation. See https://github.com/DynamoDS/Dynamo/pull/10977. 
+                        var pythonNodeSetupCode = "import sys" + Environment.NewLine + $"sys.path = {path}";
                         scope.Exec(pythonNodeSetupCode);
 
                         ProcessAdditionalBindings(scope, bindingNames, bindingValues);
@@ -663,6 +670,7 @@ sys.stdout = DynamoStdOut({0})
 
         private DataMarshaler inputMarshaler;
         private DataMarshaler outputMarshaler;
+        private string path;
 
         #endregion
 

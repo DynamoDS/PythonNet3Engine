@@ -10,11 +10,11 @@ namespace DSPythonNet3Tests
         {
             string code = @"
 from scipy import special
-OUT = special.exp10(3)
+OUT = special.round(3.3333333)
 ";
             var empty = new ArrayList();
             var result = DSPythonNet3Evaluator.EvaluatePythonScript(code, empty, empty);
-            Assert.That(result, Is.EqualTo(1000));
+            Assert.That(result, Is.EqualTo(3.0));
         }
 
         [Test]
@@ -107,15 +107,10 @@ OUT = x.value()
         public void TestMatplotlibAvailable()
         {
             string code = @"
-import sys 
-OUT = sys.version
-import unicodedata2
-#print(unicodedata.name('A'))
+import matplotlib as mpl
 
-#import matplotlib as mpl
-
-#cmap = mpl.colormaps['plasma']
-#OUT = cmap.name
+cmap = mpl.colormaps['plasma']
+OUT = cmap.name
 ";
             var empty = new ArrayList();
             var result = DSPythonNet3Evaluator.EvaluatePythonScript(code, empty, empty);
@@ -175,7 +170,7 @@ OUT = parsed_date.day
 import pandas as pd
 
 ser = pd.Series(range(5), index=list('abcde'))
-OUT = ser['d']
+OUT = ser['d'].item()
 ";
             var empty = new ArrayList();
             var result = DSPythonNet3Evaluator.EvaluatePythonScript(code, empty, empty);
