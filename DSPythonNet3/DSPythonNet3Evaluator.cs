@@ -346,10 +346,6 @@ for modname,mod in sys.modules.copy().items():
                     }
 
                     await Python.Included.Installer.SetupPython();
-
-                    Assembly wheelsAssembly = Assembly.LoadFile(Path.Join(Path.GetDirectoryName(Assembly.GetAssembly(typeof(DSPythonNet3Evaluator)).Location), "DSPythonNet3Wheels.dll")    );
-                    await Task.WhenAll(wheelsAssembly.GetManifestResourceNames().Where(x => x.Contains(".whl")).Select(wheel => Python.Included.Installer.InstallWheel(wheelsAssembly, wheel)));
-
                     isPythonInstalled = true;
                 }
                 catch (Exception e)

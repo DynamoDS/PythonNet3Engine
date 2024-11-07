@@ -17,8 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DSPythonNet3Wheels", "DSPythonNet3Wheels\DSPythonNet3Wheels.csproj", "{DC900437-51C9-42F3-BA35-9165B56E40FD}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSPythonNet3Tests", "DSpythonNet3Tests\DSPythonNet3Tests.csproj", "{08CBABF4-E13F-4C89-AAB4-95A07510EA33}"
 EndProject
 Global
@@ -39,10 +37,6 @@ Global
 		{582DA7FA-C36E-43AC-B76A-3A6F563328F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{582DA7FA-C36E-43AC-B76A-3A6F563328F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{582DA7FA-C36E-43AC-B76A-3A6F563328F9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DC900437-51C9-42F3-BA35-9165B56E40FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DC900437-51C9-42F3-BA35-9165B56E40FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DC900437-51C9-42F3-BA35-9165B56E40FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DC900437-51C9-42F3-BA35-9165B56E40FD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{08CBABF4-E13F-4C89-AAB4-95A07510EA33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{08CBABF4-E13F-4C89-AAB4-95A07510EA33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08CBABF4-E13F-4C89-AAB4-95A07510EA33}.Release|Any CPU.ActiveCfg = Release|Any CPU

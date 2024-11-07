@@ -8,12 +8,19 @@
 		<NoWarn>MSB3539;CS1591;NUnit2005;NUnit2007;CS0618;CS0612;CS0672</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
+		<Reference Include="Python.Deployment">
+			<HintPath>..\extern\Python\Python.Deployment.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Python.Included">
+			<HintPath>..\extern\Python\Python.Included.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
 		<InternalsVisibleTo Include="PythonMigrationViewExtension" />
 		<InternalsVisibleTo Include="DynamoPythonTests" />
 		
 		<PackageReference Include="DynamoVisualProgramming.Core" Version="$(DynamoPackageVersion)" ExcludeAssets="runtime" />
 		<PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="$(DynamoPackageVersion)" ExcludeAssets="runtime" />
-		<PackageReference Include="Python.Included" Version="3.11.6" />
 		<PackageReference Include="pythonnet" Version="3.1.0-preview-ADSK-*" />
 	</ItemGroup>
 	<ItemGroup>
@@ -37,9 +44,6 @@
 			<Generator>ResXFileCodeGenerator</Generator>
 			<LastGenOutput>Resources.en-US.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
-	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\DSPythonNet3Wheels\DSPythonNet3Wheels.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="pkg.json">
