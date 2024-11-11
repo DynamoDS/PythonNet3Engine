@@ -86,12 +86,8 @@ namespace DSPythonNet3Extension
                     return;
                 }
 
-                PythonEngine engine = (PythonEngine)instanceProp.GetValue(null);
-                if (engine == null)
-                {
-                    throw new Exception($"Could not get a valid PythonEngine instance by calling the {eType.Name}.Instance method");
-                }
-
+                PythonEngine engine = (PythonEngine)(instanceProp.GetValue(null) 
+                    ?? throw new Exception($"Could not get a valid PythonEngine instance by calling the {eType?.Name}.Instance method"));
                 if (PythonEngineManager.Instance.AvailableEngines.All(x => x.Name != engine.Name))
                 {
                     PythonEngineManager.Instance.AvailableEngines.Add(engine);

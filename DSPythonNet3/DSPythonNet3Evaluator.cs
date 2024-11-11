@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.Loader;
 using Autodesk.DesignScript.Runtime;
 using DSPythonNet3.Encoders;
 using Dynamo.Events;
@@ -246,7 +247,7 @@ for modname,mod in sys.modules.copy().items():
                 return null;
             }
 
-            InstallPythonAsync().Wait();
+            Task.Run(InstallPythonAsync).Wait();
             if (!PythonEngine.IsInitialized)
             {
                 PythonEngine.Initialize();
@@ -346,6 +347,13 @@ for modname,mod in sys.modules.copy().items():
                     }
 
                     await Python.Included.Installer.SetupPython();
+
+                    Assembly assembly = Assembly.GetAssembly(typeof(DSPythonNet3Evaluator)) ?? throw new Exception("Can't get assembly.");
+                    AssemblyLoadContext context = AssemblyLoadContext.GetLoadContext(assembly) ?? throw new Exception("Can't get assembly context.");
+
+                    Assembly wheelsAssembly = context.LoadFromAssemblyPath(Path.Join(Path.GetDirectoryName(assembly.Location), "DSPythonNet3Wheels.dll"));
+                    await Task.WhenAll(wheelsAssembly.GetManifestResourceNames().Where(x => x.Contains(".whl")).Select(wheel => Python.Included.Installer.InstallWheel(wheelsAssembly, wheel))).ConfigureAwait(false);
+
                     isPythonInstalled = true;
                 }
                 catch (Exception e)
