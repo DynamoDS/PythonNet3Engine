@@ -43,8 +43,17 @@ namespace DSPythonNet3Extension
         public void Ready(ReadyParams rp)
         {
             var extraPath = Path.Combine(new FileInfo(Assembly.GetExecutingAssembly().Location).Directory.Parent.FullName, "extra");
-            var alc = new IsolatedPythonContext(Path.Combine(extraPath, $"{PythonEvaluatorAssembly}.dll"));
-            var assem = alc.LoadFromAssemblyName(new AssemblyName(PythonEvaluatorAssembly));
+            var fullPath = Path.Combine(extraPath, $"{PythonEvaluatorAssembly}.dll");
+
+
+            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            // Check if the specified assembly is already loaded
+            var assem = loadedAssemblies.FirstOrDefault(assem => string.Equals(assem.Location, fullPath, StringComparison.OrdinalIgnoreCase));
+            if (assem is null)
+            {
+                var alc = new IsolatedPythonContext(fullPath);
+                assem = alc.LoadFromAssemblyName(new AssemblyName(PythonEvaluatorAssembly));
+            }
 
             //load the engine into Dynamo ourselves.
             LoadPythonEngine(assem);
