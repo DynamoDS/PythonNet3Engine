@@ -71,13 +71,7 @@ clr.setPreload(True)
 
         private object ExecutePythonScriptCode(string code)
         {
-            Task.Run(DSPythonNet3Evaluator.InstallPythonAsync).Wait();
-
-            if (!PythonEngine.IsInitialized)
-            {
-                PythonEngine.Initialize();
-                PythonEngine.BeginAllowThreads();
-            }
+            DSPythonNet3Evaluator.InitializePython();
 
             using (Py.GIL())
             {
@@ -375,13 +369,7 @@ clr.setPreload(True)
             BasicVariableTypes.Add(Tuple.Create(LIST_VARIABLE, typeof(PyList)));
             BasicVariableTypes.Add(Tuple.Create(DICT_VARIABLE, typeof(PyDict)));
 
-            Task.Run(DSPythonNet3Evaluator.InstallPythonAsync).Wait();
-
-            if (!PythonEngine.IsInitialized)
-            {
-                PythonEngine.Initialize();
-                PythonEngine.BeginAllowThreads();
-            }
+            DSPythonNet3Evaluator.InitializePython();
 
             try
             {

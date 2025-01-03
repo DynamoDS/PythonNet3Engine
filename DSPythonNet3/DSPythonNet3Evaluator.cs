@@ -247,71 +247,63 @@ for modname,mod in sys.modules.copy().items():
                 return null;
             }
 
-            Task.Run(InstallPythonAsync).Wait();
-            if (!PythonEngine.IsInitialized)
-            {
-                PythonEngine.Initialize();
-                PythonEngine.BeginAllowThreads();
+            InitializePython();
 
-                using (Py.GIL())
+            using (Py.GIL())
+            {
+                if (globalScope == null)
+                {
+                    globalScope = CreateGlobalScope();
+                }
+
                 using (PyModule scope = Py.CreateScope())
                 {
-                    scope.Exec("import sys" + Environment.NewLine + "path = str(sys.path)");
-                    path = scope.Get<string>("path");
-                }
-            }
-                using (Py.GIL())
-                {
-                    if (globalScope == null)
-                    {
-                        globalScope = CreateGlobalScope();
-                    }
-
-                    using (PyModule scope = Py.CreateScope())
+                    if (path is not null)
                     {
                         // Reset the 'sys.path' value to the default python paths on node evaluation. See https://github.com/DynamoDS/Dynamo/pull/10977. 
                         var pythonNodeSetupCode = "import sys" + Environment.NewLine + $"sys.path = {path}";
                         scope.Exec(pythonNodeSetupCode);
+                    }
 
-                        ProcessAdditionalBindings(scope, bindingNames, bindingValues);
+                    ProcessAdditionalBindings(scope, bindingNames, bindingValues);
 
-                        int amt = Math.Min(bindingNames.Count, bindingValues.Count);
+                    int amt = Math.Min(bindingNames.Count, bindingValues.Count);
 
-                        for (int i = 0; i < amt; i++)
+                    for (int i = 0; i < amt; i++)
+                    {
+                        scope.Set((string)bindingNames[i], InputMarshaler.Marshal(bindingValues[i]).ToPython());
+                    }
+
+                    try
+                    {
+                        OnEvaluationBegin(scope, code, bindingValues);
+                        scope.Exec(code);
+                        var result = scope.Contains("OUT") ? scope.Get("OUT") : null;
+
+                        return OutputMarshaler.Marshal(result);
+                    }
+                    catch (Exception e)
+                    {
+                        evaluationSuccess = false;
+                        var traceBack = GetTraceBack(e);
+                        if (!string.IsNullOrEmpty(traceBack))
                         {
-                            scope.Set((string)bindingNames[i], InputMarshaler.Marshal(bindingValues[i]).ToPython());
+                            // Throw a new error including trace back info added to the message
+                            throw new InvalidOperationException($"{e.Message}\n{traceBack}", e);
                         }
-
-                        try
+                        else
                         {
-                            OnEvaluationBegin(scope, code, bindingValues);
-                            scope.Exec(code);
-                            var result = scope.Contains("OUT") ? scope.Get("OUT") : null;
-
-                            return OutputMarshaler.Marshal(result);
-                        }
-                        catch (Exception e)
-                        {
-                            evaluationSuccess = false;
-                            var traceBack = GetTraceBack(e);
-                            if (!string.IsNullOrEmpty(traceBack))
-                            {
-                                // Throw a new error including trace back info added to the message
-                                throw new InvalidOperationException($"{e.Message}\n{traceBack}", e);
-                            }
-                            else
-                            {
 #pragma warning disable CA2200 // Rethrow to preserve stack details
-                                throw e;
+                            throw e;
 #pragma warning restore CA2200 // Rethrow to preserve stack details
-                            }
-                        }
-                        finally
-                        {
-                            OnEvaluationEnd(evaluationSuccess, scope, code, bindingValues);
                         }
                     }
+                    finally
+                    {
+                        OnEvaluationEnd(evaluationSuccess, scope, code, bindingValues);
+                    }
                 }
+            }
         }
 
         public static object EvaluatePythonScript(
@@ -334,12 +326,6 @@ for modname,mod in sys.modules.copy().items():
             {
                 try
                 {
-                    // First try the custom ways of supplying the python dll name (environment variables, or static API calls)
-                    if (string.IsNullOrEmpty(Runtime.PythonDLL))
-                    {
-                        Runtime.PythonDLL = Python.Included.Installer.PYTHON_VERSION + ".dll";
-                    }
-                    
                     var disableEmbedded = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DYN_DISABLE_PYNET_EMBEDDED"));
                     if (disableEmbedded)
                     {
@@ -361,6 +347,38 @@ for modname,mod in sys.modules.copy().items():
                     dynamoLogger?.LogError(e.Message);
                 }
             }
+        }
+
+        private static string path;
+
+        /// <summary>
+        /// Install, if necessary, and initialize, if necessary, Python.
+        /// </summary>
+        /// <returns>True if Python was not already initialized</returns>
+        internal static bool InitializePython()
+        {
+            Task.Run(InstallPythonAsync).Wait();
+
+            if (!PythonEngine.IsInitialized)
+            {
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DYN_DISABLE_PYTHONDLL_OVERRIDE")))
+                {
+                    Runtime.PythonDLL = Path.Join(Python.Included.Installer.EmbeddedPythonHome, Python.Included.Installer.PYTHON_VERSION + ".dll");
+                }
+
+                PythonEngine.Initialize();
+                PythonEngine.BeginAllowThreads();
+
+                using (Py.GIL())
+                using (PyModule scope = Py.CreateScope())
+                {
+                    scope.Exec("import sys" + Environment.NewLine + "path = str(sys.path)");
+                    path = scope.Get<string>("path");
+                }
+
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -674,7 +692,6 @@ sys.stdout = DynamoStdOut({0})
 
         private DataMarshaler inputMarshaler;
         private DataMarshaler outputMarshaler;
-        private string path;
 
         #endregion
 
