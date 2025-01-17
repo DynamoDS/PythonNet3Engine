@@ -494,7 +494,7 @@ sys.stdout = DynamoStdOut({0})
         [SupressImportIntoVM]
         internal override void RegisterHostDataMarshalers()
         {
-            DataMarshaler dataMarshalerToUse = HostDataMarshaler as DataMarshaler;
+            DataMarshaler? dataMarshalerToUse = HostDataMarshaler as DataMarshaler;
             dataMarshalerToUse?.RegisterMarshaler((PyObject pyObj) =>
             {
                 try
@@ -503,20 +503,37 @@ sys.stdout = DynamoStdOut({0})
                     {
                         if (PyDict.IsDictType(pyObj))
                         {
-                            using (var pyDict = new PyDict(pyObj))
+                            using var pyDict = new PyDict(pyObj);
+                            var dict = new PyDict();
+                            foreach (PyObject item in pyDict.Items())
                             {
-                                var dict = new PyDict();
-                                foreach (PyObject item in pyDict.Items())
-                                {
-                                    dict.SetItem(
-                                        ConverterExtension.ToPython(dataMarshalerToUse.Marshal(item.GetItem(0))),
-                                        ConverterExtension.ToPython(dataMarshalerToUse.Marshal(item.GetItem(1)))
-                                    );
-                                }
-                                return dict;
+                                dict.SetItem(
+                                    ConverterExtension.ToPython(dataMarshalerToUse.Marshal(item.GetItem(0))),
+                                    ConverterExtension.ToPython(dataMarshalerToUse.Marshal(item.GetItem(1)))
+                                );
                             }
+                            return dict;
                         }
+
+                        if (PyList.IsListType(pyObj))
+                        {
+                            using var inputList = new PyList(pyObj);
+                            var outputList = new PyList();
+                            foreach (PyObject item in inputList)
+                            {
+                                outputList.Append(ConverterExtension.ToPython(dataMarshalerToUse.Marshal(item)));
+                            }
+                            return outputList;
+                        }
+
                         var unmarshalled = pyObj.AsManagedObject(typeof(object));
+
+                        // Avoid calling this marshaler infinitely.
+                        if (unmarshalled is PyObject)
+                        {
+                            return unmarshalled;
+                        }
+
                         return dataMarshalerToUse.Marshal(unmarshalled);
                     }
                 }
