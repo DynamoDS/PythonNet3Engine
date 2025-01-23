@@ -180,6 +180,96 @@ clr.setPreload(True)
                 }
             }
         }
+
+        /// <summary>
+        /// Generate completion data for the specified text by relying on the autocomplete from Jedi package.
+        /// </summary>
+        /// <param name="code">The code to parse</param>
+        /// <returns>Return a list of IExternalCodeCompletionData </returns>
+        private IExternalCodeCompletionData[] GetCompletionDataFromJedi(string code)
+        {
+            var items = new List<PythonCodeCompletionDataCore>();
+
+            try
+            {
+                using (Py.GIL())
+                using (var jediScope = Py.CreateScope())
+                {
+                    jediScope.Set("code", code);
+
+                    string jediSnippet = @"
+import jedi
+
+def _no_docs_merge_name_docs(*args, **kwargs):
+    return str()
+
+jedi.inference.names._merge_name_docs = _no_docs_merge_name_docs
+
+script = jedi.Script(code)
+lines = code.split('\n')
+line_no = len(lines)
+column_no = len(lines[-1])
+
+completions_list = script.complete(line=line_no, column=column_no)
+
+completion_data = []
+for c in completions_list:
+    completion_data.append({
+        'name': c.name,
+        'type': c.type,
+    })
+";
+
+                    jediScope.Exec(jediSnippet);
+
+                    PyObject pyCompletions = jediScope.Get("completion_data");
+
+                    var completionCandidates = pyCompletions.As<List<Dictionary<string, string>>>();
+
+                    string name = GetLastName(code);
+                    var completionItems = new List<PythonCodeCompletionDataCore>();
+                    foreach (var item in completionCandidates)
+                    {
+                        string? member = item.GetValueOrDefault("name");
+                        if (string.IsNullOrEmpty(member))
+                            continue;
+
+                        string? type = item.GetValueOrDefault("type");
+                        if (string.IsNullOrEmpty(type))
+                            continue;
+
+                        ExternalCodeCompletionType realType = ExternalCodeCompletionType.Field;
+                        switch (type.ToLower())
+                        {
+                            case "module":
+                            case "namespace":
+                                realType = ExternalCodeCompletionType.Namespace;
+                                break;
+                            case "class":
+                                realType = ExternalCodeCompletionType.Class;
+                                break;
+                            case "function":
+                                realType = ExternalCodeCompletionType.Method;
+                                break;
+                            case "property":
+                                realType = ExternalCodeCompletionType.Property;
+                                break;
+                            case "statement":
+                                realType = ExternalCodeCompletionType.Field;
+                                break;
+                            default:
+                                break;
+                        }
+
+                        PythonCodeCompletionDataCore newCompletionItem = new PythonCodeCompletionDataCore(member, name, false, realType, this);
+                        items.Add(newCompletionItem);
+                    }
+                }
+            }
+            catch { }
+
+            return [.. items];
+        }
         #endregion
 
         #region PythonCodeCompletionProviderCommon public methods implementations
@@ -261,9 +351,16 @@ clr.setPreload(True)
 
             // If unable to find matching results and expand was set to false,
             // try again using the full namespace (set expand to true)
-            if (!items.Any() && !expand)
+            if (!items.Any())
             {
-                return GetCompletionData(code, true);
+                if (!expand)
+                {
+                    return GetCompletionData(code, true);
+                }
+                else
+                {
+                    return GetCompletionDataFromJedi(code);
+                }
             }
 
             return items.ToArray();
