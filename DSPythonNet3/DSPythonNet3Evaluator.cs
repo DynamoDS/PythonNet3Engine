@@ -150,6 +150,8 @@ namespace DSPythonNet3
             }
         }
 
+        private static readonly PropertyInfo? revitDynamoProperty;
+
         /// <summary>
         /// Use Lazy&lt;PythonEngineManager&gt; to make sure the Singleton class is only initialized once
         /// </summary>
@@ -166,6 +168,13 @@ namespace DSPythonNet3
         static DSPythonNet3Evaluator()
         {
             InitializeEncoders();
+
+            var dynamoRevitAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name == "DynamoRevitDS");
+
+            if (dynamoRevitAssembly is not null)
+            {
+                revitDynamoProperty = dynamoRevitAssembly.GetType("Dynamo.Applications.DynamoRevit")?.GetProperty("RevitDynamoModel", BindingFlags.Public | BindingFlags.Static);
+            }
         }
 
         public override string Name => "PythonNet3";
@@ -316,7 +325,7 @@ for modname,mod in sys.modules.copy().items():
 
         private static bool isPythonInstalled = false;
         /// <summary>
-        /// Makes sure Python is installed on the system and it's location added to the path.
+        /// Makes sure Python is installed on the system and its location added to the path.
         /// NOTE: Calling SetupPython multiple times will add the install location to the path many times,
         /// potentially causing the environment variable to overflow.
         /// </summary>
@@ -326,13 +335,10 @@ for modname,mod in sys.modules.copy().items():
             {
                 try
                 {
-                    var disableEmbedded = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DYN_DISABLE_PYNET_EMBEDDED"));
-                    if (disableEmbedded)
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DYN_DISABLE_PYNET_EMBEDDED")))
                     {
-                        Python.Included.PythonEnv.DeployEmbeddedPython = false;
+                        await Python.Included.Installer.SetupPython();
                     }
-
-                    await Python.Included.Installer.SetupPython();
 
                     Assembly assembly = Assembly.GetAssembly(typeof(DSPythonNet3Evaluator)) ?? throw new Exception("Can't get assembly.");
                     AssemblyLoadContext context = AssemblyLoadContext.GetLoadContext(assembly) ?? throw new Exception("Can't get assembly context.");
@@ -494,8 +500,15 @@ sys.stdout = DynamoStdOut({0})
         [SupressImportIntoVM]
         internal override void RegisterHostDataMarshalers()
         {
-            DataMarshaler? dataMarshalerToUse = HostDataMarshaler as DataMarshaler;
-            dataMarshalerToUse?.RegisterMarshaler((PyObject pyObj) =>
+            if (HostDataMarshaler is DataMarshaler dataMarshalerToUse)
+            {
+                RegisterHostDataMarshalers(dataMarshalerToUse);
+            }
+        }
+
+        private static void RegisterHostDataMarshalers(DataMarshaler dataMarshaler)
+        {
+            dataMarshaler.RegisterMarshaler((PyObject pyObj) =>
             {
                 try
                 {
@@ -508,8 +521,8 @@ sys.stdout = DynamoStdOut({0})
                             foreach (PyObject item in pyDict.Items())
                             {
                                 dict.SetItem(
-                                    ConverterExtension.ToPython(dataMarshalerToUse.Marshal(item.GetItem(0))),
-                                    ConverterExtension.ToPython(dataMarshalerToUse.Marshal(item.GetItem(1)))
+                                    ConverterExtension.ToPython(dataMarshaler.Marshal(item.GetItem(0))),
+                                    ConverterExtension.ToPython(dataMarshaler.Marshal(item.GetItem(1)))
                                 );
                             }
                             return dict;
@@ -521,7 +534,7 @@ sys.stdout = DynamoStdOut({0})
                             var outputList = new PyList();
                             foreach (PyObject item in inputList)
                             {
-                                outputList.Append(ConverterExtension.ToPython(dataMarshalerToUse.Marshal(item)));
+                                outputList.Append(ConverterExtension.ToPython(dataMarshaler.Marshal(item)));
                             }
                             return outputList;
                         }
@@ -534,7 +547,7 @@ sys.stdout = DynamoStdOut({0})
                             return unmarshalled;
                         }
 
-                        return dataMarshalerToUse.Marshal(unmarshalled);
+                        return dataMarshaler.Marshal(unmarshalled);
                     }
                 }
                 catch (Exception e)
@@ -726,6 +739,8 @@ sys.stdout = DynamoStdOut({0})
         [SupressImportIntoVM]
         public override event EvaluationFinishedEventHandler EvaluationFinished;
 
+        private bool registeredUnwrapMarshaler;
+
         /// <summary>
         /// Called immediately before evaluation starts
         /// </summary>
@@ -743,6 +758,32 @@ sys.stdout = DynamoStdOut({0})
                     Dynamo.Logging.Actions.Start,
                     Dynamo.Logging.Categories.PythonOperations,
                     "CPythonEvaluation");
+            }
+
+            // Set custom unwrap marshaler in Revit 2025: If `UnwrapElementMarshaler` exists on `RevitDynamoModel`, we're in pre-2026 Revit
+            // where D4R doesn't call RegisterHostDataMarshalers, so we do it manually.
+            // We only need to add the marshalers once for each RevitDynamoModel.
+            // `registeredUnwrapMarshaler` is reset when Dynamo is restarted (Python evaluator persists across restarts within same Revit session.
+            if (revitDynamoProperty is not null && !registeredUnwrapMarshaler)
+            {
+                var revitDynamoModel = revitDynamoProperty.GetValue(null);
+
+                DataMarshaler? unwrapMarshaler = revitDynamoModel?.GetType()
+                    .GetField(
+                        "UnwrapElementMarshaler", 
+                        BindingFlags.NonPublic | BindingFlags.Instance)?
+                    .GetValue(revitDynamoModel) as DataMarshaler;
+
+                if (unwrapMarshaler is not null)
+                {
+                    RegisterHostDataMarshalers(unwrapMarshaler);
+                }
+                else
+                {
+                    DynamoLogger?.LogWarning("UnwrapElementMarshaler not found on RevitDynamoModel.", WarningLevel.Error);
+                }
+
+                registeredUnwrapMarshaler = true;
             }
         }
 

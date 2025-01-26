@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.Loader;
 using Dynamo.Extensions;
 using Dynamo.Graph.Workspaces;
@@ -68,7 +65,7 @@ namespace DSPythonNet3Extension
             }
         }
 
-        private static void LoadPythonEngine(Assembly assembly)
+        private void LoadPythonEngine(Assembly assembly)
         {
             if (assembly == null)
             {
@@ -97,6 +94,10 @@ namespace DSPythonNet3Extension
 
                 PythonEngine engine = (PythonEngine)(instanceProp.GetValue(null) 
                     ?? throw new Exception($"Could not get a valid PythonEngine instance by calling the {eType?.Name}.Instance method"));
+
+                // Reset flag to register unwrap marshaler again in Revit 2025
+                engine.GetType().GetField("registeredUnwrapMarshaler", BindingFlags.NonPublic | BindingFlags.Instance)?.SetValue(engine, false);
+
                 if (PythonEngineManager.Instance.AvailableEngines.All(x => x.Name != engine.Name))
                 {
                     PythonEngineManager.Instance.AvailableEngines.Add(engine);
