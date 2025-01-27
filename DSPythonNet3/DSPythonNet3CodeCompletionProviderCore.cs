@@ -35,7 +35,7 @@ namespace DSPythonNet3
         /// The scope used by the engine.  This is where all the loaded symbols
         /// are stored.  It's essentially an environment dictionary.
         /// </summary>
-        internal PyModule Scope
+        internal PyModule? Scope
         {
             get { return scope; }
             set { scope = value; }
@@ -413,10 +413,10 @@ for c in completions_list:
                 switch (evalType)
                 {
                     case PythonScriptType.Expression:
-                        var result = Scope.Eval(script);
+                        var result = Scope?.Eval(script);
                         return DSPythonNet3Evaluator.OutputMarshaler.Marshal(result);
                     default:
-                        Scope.Exec(script);
+                        Scope?.Exec(script);
                         return null;
                 }
             }
@@ -568,6 +568,7 @@ for c in completions_list:
                     using (Py.GIL())
                     {
                         Scope.Dispose();
+                        Scope = null;
                     }
                 }
                 catch { }

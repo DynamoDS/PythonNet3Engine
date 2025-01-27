@@ -344,7 +344,36 @@ for modname,mod in sys.modules.copy().items():
                     AssemblyLoadContext context = AssemblyLoadContext.GetLoadContext(assembly) ?? throw new Exception("Can't get assembly context.");
 
                     Assembly wheelsAssembly = context.LoadFromAssemblyPath(Path.Join(Path.GetDirectoryName(assembly.Location), "DSPythonNet3Wheels.dll"));
-                    await Task.WhenAll(wheelsAssembly.GetManifestResourceNames().Where(x => x.Contains(".whl")).Select(wheel => Python.Included.Installer.InstallWheel(wheelsAssembly, wheel))).ConfigureAwait(false);
+
+                    List<string> pipWheelInstall = new List<string>();
+                    await Task.WhenAll(wheelsAssembly.GetManifestResourceNames().Where(x =>
+                    {
+                        bool isWheel = x.Contains(".whl");
+                        if (isWheel && x.Contains("pywin32-"))
+                        {
+                            pipWheelInstall.Add(x);
+                            return false;
+                        }
+
+                        return isWheel;
+                    }).Select(wheel => Python.Included.Installer.InstallWheel(wheelsAssembly, wheel))).ConfigureAwait(false);
+
+                    foreach (var pipWheelResource in pipWheelInstall)
+                    {                        
+                        var pipWheelName = pipWheelResource.Remove(0, "DSPythonNet3Wheels.Resources.".Count());
+                        string wheelPath = Path.Combine(Python.Included.Installer.EmbeddedPythonHome, "Lib", pipWheelName);
+                        using (Stream? stream = wheelsAssembly.GetManifestResourceStream(pipWheelResource))
+                        {
+                            using (FileStream destination = new FileStream(wheelPath, FileMode.Create))
+                            {
+                                stream?.CopyTo(destination);
+                            }
+                        }
+
+                        string cmdToExecute = $"python -m pip install \"Lib\\{pipWheelName}\"";
+                        await Python.Deployment.Installer.RunCommand(cmdToExecute, CancellationToken.None);
+                        File.Delete(wheelPath);
+                    }
 
                     isPythonInstalled = true;
                 }
