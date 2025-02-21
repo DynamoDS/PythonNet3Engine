@@ -3,6 +3,4 @@
 @Library('PSL@master')
 @Library('CILibrary@CBP/stable') _
 
-//env.RELEASE_BRANCHES = "master"
-
 StartPipeline()
