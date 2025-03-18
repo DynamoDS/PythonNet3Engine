@@ -9,7 +9,7 @@ on:
 jobs:
   build-test:
     name: Build and Test
-    runs-on: [windows-latest, x64]
+    runs-on: windows-latest
     timeout-minutes: 15
 
     steps:
