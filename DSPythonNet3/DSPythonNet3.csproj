@@ -14,7 +14,7 @@
 		<PackageReference Include="DynamoVisualProgramming.Core" Version="$(DynamoPackageVersion)" ExcludeAssets="runtime" />
 		<PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="$(DynamoPackageVersion)" ExcludeAssets="runtime" />
 		<PackageReference Include="Python.Included" Version="3.11.6" />
-		<PackageReference Include="Autodesk.pythonnet" Version="3.1.0-preview-*" />
+		<PackageReference Include="Autodesk.pythonnet" Version="3.1.0-preview*" />
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Update="Properties\Resources.Designer.cs">
