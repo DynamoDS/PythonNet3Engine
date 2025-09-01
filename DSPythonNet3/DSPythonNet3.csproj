@@ -47,6 +47,10 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
+	<ItemGroup>
+		<None Include="THIRD_PARTY_NOTICES.txt" Pack="true" PackagePath="\" />
+		<None Include="licenses\**\*.*" Pack="true" PackagePath="licenses\" />
+	</ItemGroup>
 
 	<Target Name="PrepareExtension" AfterTargets="AfterBuild">
 		<WriteLinesToFile File="$(BuildOutput)pkg.json" Lines="$([System.IO.File]::ReadAllText($(BuildOutput)pkg.json).Replace('$Version$','$(Version)').Replace('$DynamoVersion$','$(DynamoVersion)').Replace('$DllVersion$','$(MS_PACKAGE_VERSION)'))" Overwrite="true" Encoding="Unicode" />
