@@ -49,7 +49,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="THIRD_PARTY_NOTICES.txt" Pack="true" PackagePath="\" />
-		<None Include="licenses\**\*.*" Pack="true" PackagePath="licenses\" />
 	</ItemGroup>
 
 	<Target Name="PrepareExtension" AfterTargets="AfterBuild">
