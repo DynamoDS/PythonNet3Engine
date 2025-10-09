@@ -3,7 +3,7 @@
     "file_hash": null,
     "name": "PythonNet3 Engine",
     "version": "$Version$",
-    "description": "***This is PythonNet3 version***",
+    "description": "An engine for Dynamo's Python nodes based on version 3 of the Python.NET open source library. This engine behaves similarly to the default 'CPython3' engine, with some improvements: - Fixed overloaded method resolution. ​- Improved generic method inference (don’t need to specify generics as often). - Define Python classes inheriting from .NET classes and interfaces.​- Better extension method support, including Linq. ​- Override .Net methods that have an 'out' or 'ref'. Please see our blog post for more detail: https://dynamobim.org/pythonnet3-a-new-dynamo-python-to-fix-everything",
     "group": "",
     "keywords": [
         "pythonnet",
@@ -23,5 +23,5 @@
         "DSPythonNet3Empty, Version=$DllVersion$, Culture=neutral, PublicKeyToken=null"
     ],
     "copyright_holder": "DynamoTeam",
-    "copyright_year": "2024"
+    "copyright_year": "2025"
 }
