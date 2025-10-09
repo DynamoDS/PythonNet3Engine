@@ -41,5 +41,6 @@ deployment:
     publish_to_jenkins: true
     publish_to_artifactory: false
     publish_to_package_manager: true
+    use_dev_pm: false
     outputs:
       - DSPythonNet3.zip
