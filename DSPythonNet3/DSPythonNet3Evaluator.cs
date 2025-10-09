@@ -168,6 +168,7 @@ namespace DSPythonNet3
         static DSPythonNet3Evaluator()
         {
             InitializeEncoders();
+            SubscribeToDynamoResetEvent();
 
             var dynamoRevitAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name == "DynamoRevitDS");
 
@@ -177,6 +178,30 @@ namespace DSPythonNet3
             }
         }
 
+        /// <summary>
+        /// Subscribes our handler to DynamoModel.RequestPythonReset (internal static event) using reflection.
+        /// </summary>
+        private static void SubscribeToDynamoResetEvent()
+        {
+            try
+            {
+                var dmType = typeof(Dynamo.Models.DynamoModel);
+
+                // internal static event Action<string> RequestPythonReset;
+                var evt = dmType.GetEvent("RequestPythonReset",
+                           BindingFlags.Static | BindingFlags.NonPublic);
+                if (evt == null) return;
+
+                // get the non-public "add" method and hook our Action<string>
+                var addMethod = evt.GetAddMethod(true);
+                if (addMethod == null) return;
+
+                Action<string> handler = RequestPythonResetHandler;
+                addMethod.Invoke(null, new object[] { handler });
+            }
+            catch  { }
+        }
+
         public override string Name => "PythonNet3";
 
         internal static void RequestPythonResetHandler(string pythonEngine)
@@ -184,7 +209,7 @@ namespace DSPythonNet3
             //check if python engine request is for this engine, and engine is currently started
             if (PythonEngine.IsInitialized && pythonEngine == Instance.Name)
             {
-                DynamoLogger?.Log("attempting reload of cpython3 modules", LogLevel.Console);
+                DynamoLogger?.Log("attempting reload of pythonnet3 modules", LogLevel.Console);
                 using (Py.GIL())
                 {
                 //the following is inspired by:
@@ -232,7 +257,7 @@ for modname,mod in sys.modules.copy().items():
                 Analytics.TrackEvent(
                    Dynamo.Logging.Actions.Start,
                    Dynamo.Logging.Categories.PythonOperations,
-                   "CPythonReset");
+                   "PythonNet3Reset");
             }
         }
 
