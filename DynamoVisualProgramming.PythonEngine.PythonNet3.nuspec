@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>DynamoVisualProgramming.PythonEngine.PythonNet3</id>
+        <version>0.0.0</version>
+        <authors>Autodesk</authors>
+        <owners>Autodesk</owners>
+        <license type="expression">Apache-2.0</license>
+        <projectUrl>https://github.com/DynamoDS/PythonNet3Engine</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>PythonNet3 Engine Nuget, it contains the necessary binaries to load the PythonNet3 engine to Dynamo</description>
+        <copyright>Copyright Autodesk 2025</copyright>
+    </metadata>
+    <files>
+        <file src="package_output\pkg.json" target="" />
+        <file src="package_output\bin\**" target="bin\" exclude="bin\DSPythonNet3*.pdb;" />
+        <file src="package_output\extra\**" target="extra\" />
+    </files>
+</package>
