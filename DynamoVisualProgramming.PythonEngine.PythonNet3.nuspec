@@ -12,8 +12,8 @@
         <copyright>Copyright Autodesk 2025</copyright>
     </metadata>
     <files>
-        <file src="package_output\pkg.json" target="" />
-        <file src="package_output\bin\**" target="bin\" exclude="bin\DSPythonNet3*.pdb;" />
-        <file src="package_output\extra\**" target="extra\" />
+        <file src="package_output\DSPythonNet3\pkg.json" target="content\manifest\" />
+        <file src="package_output\DSPythonNet3\bin\**" target="lib\net10.0\" exclude="**\*.pdb;" />
+        <file src="package_output\DSPythonNet3\extra\**" target="lib\net10.0\" exclude="**\*.pdb;" />
     </files>
 </package>
