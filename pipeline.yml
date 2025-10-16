@@ -56,5 +56,5 @@ deployment:
     nuget_config_file: nuget.config
     nuspec_files:
       - DynamoVisualProgramming.PythonEngine.PythonNet3.nuspec
-    package_version_cmd: echo %MS_PACKAGE_VERSION%
+    package_version_cmd: echo %_PACKAGE_VERSION%
     destination_source_name: Public Nuget
