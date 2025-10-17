@@ -426,6 +426,11 @@ for modname,mod in sys.modules.copy().items():
                     Runtime.PythonDLL = Path.Join(Python.Included.Installer.EmbeddedPythonHome, Python.Included.Installer.PYTHON_VERSION + ".dll");
                 }
 
+                // Detect current .NET thread apartment and make comtypes match it
+                var apt = System.Threading.Thread.CurrentThread.GetApartmentState();
+                var comApt = (apt == System.Threading.ApartmentState.STA) ? "STA" : "MTA";
+                Environment.SetEnvironmentVariable("COMTYPES_APARTMENT", comApt, EnvironmentVariableTarget.Process);
+
                 PythonEngine.Initialize();
                 PythonEngine.BeginAllowThreads();
 
