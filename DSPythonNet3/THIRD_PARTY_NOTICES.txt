@@ -155,7 +155,7 @@ SOFTWARE.
 
 Package: click
 Version: 8.3.0
-License: BDS License
+License: BSD License
 Source: https://pypi.org/project/click/
 Copyright: Copyright 2014 Pallets
 ----------------------------------------
