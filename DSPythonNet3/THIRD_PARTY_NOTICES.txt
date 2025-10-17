@@ -192,7 +192,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Package: colorama
 Version: 0.4.6
-License: BDS License
+License: BSD License
 Source: https://pypi.org/project/colorama/
 Copyright: Copyright (c) 2010 Jonathan Hartley
 ----------------------------------------
