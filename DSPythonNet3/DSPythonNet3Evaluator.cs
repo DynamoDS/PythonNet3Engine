@@ -375,7 +375,7 @@ for modname,mod in sys.modules.copy().items():
 
                     List<string> pipWheelInstall = new List<string>();
 
-                    // Extract noo-pip wheels directly from the resource stream
+                    // Extract non-pip wheels directly from the resource stream
                     foreach (var resName in wheelsAssembly.GetManifestResourceNames())
                     {
                         bool isWheel = resName.EndsWith(".whl");
