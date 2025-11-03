@@ -370,21 +370,55 @@ for modname,mod in sys.modules.copy().items():
 
                     Assembly wheelsAssembly = context.LoadFromAssemblyPath(Path.Join(Path.GetDirectoryName(assembly.Location), "DSPythonNet3Wheels.dll"));
 
+                    string sitePkgsPath = Path.Combine(Python.Included.Installer.EmbeddedPythonHome, "Lib", "site-packages");
+                    Directory.CreateDirectory(sitePkgsPath);
+
                     List<string> pipWheelInstall = new List<string>();
-                    await Task.WhenAll(wheelsAssembly.GetManifestResourceNames().Where(x =>
+
+                    // Extract noo-pip wheels directly from the resource stream
+                    foreach (var resName in wheelsAssembly.GetManifestResourceNames())
                     {
-                        bool isWheel = x.Contains(".whl");
-                        if (isWheel && x.Contains("pywin32-"))
+                        bool isWheel = resName.EndsWith(".whl");
+                        if (!isWheel) continue;
+
+                        if (resName.Contains("pywin32-"))
                         {
-                            pipWheelInstall.Add(x);
-                            return false;
+                            pipWheelInstall.Add(resName);
+                            continue;
                         }
 
-                        return isWheel;
-                    }).Select(wheel => Python.Included.Installer.InstallWheel(wheelsAssembly, wheel))).ConfigureAwait(false);
+                        using (var stream = wheelsAssembly.GetManifestResourceStream(resName))
+                        {
+                            if (stream == null || stream.Length == 0)
+                            {
+                                continue;
+                            }
+
+                            using (var zip = new System.IO.Compression.ZipArchive(stream, System.IO.Compression.ZipArchiveMode.Read, false))
+                            {
+                                foreach (var entry in zip.Entries)
+                                {
+                                    if (string.IsNullOrEmpty(entry.Name)) continue;
+
+                                    var destPath = Path.Combine(sitePkgsPath, entry.FullName.Replace('/', Path.DirectorySeparatorChar));
+                                    var destDir = Path.GetDirectoryName(destPath);
+                                    if (!string.IsNullOrEmpty(destDir))
+                                    {
+                                        Directory.CreateDirectory(destDir);
+                                    }
+
+                                    using (var inStream = entry.Open())
+                                    using (var outStream = new FileStream(destPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                                    {
+                                        await inStream.CopyToAsync(outStream).ConfigureAwait(false);
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     foreach (var pipWheelResource in pipWheelInstall)
-                    {                        
+                    {
                         var pipWheelName = pipWheelResource.Remove(0, "DSPythonNet3Wheels.Resources.".Count());
                         string wheelPath = Path.Combine(Python.Included.Installer.EmbeddedPythonHome, "Lib", pipWheelName);
                         using (Stream? stream = wheelsAssembly.GetManifestResourceStream(pipWheelResource))
