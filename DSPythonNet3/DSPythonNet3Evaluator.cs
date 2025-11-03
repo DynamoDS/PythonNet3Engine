@@ -351,6 +351,8 @@ for modname,mod in sys.modules.copy().items():
         private static bool isPythonInstalled = false;
         /// <summary>
         /// Makes sure Python is installed on the system and its location added to the path.
+        /// Extracts non-pip wheels directly from the embedded resource stream into site-packages,
+        /// adds a zip-slip guard (normalize & validate paths), and uses pip only for pywin32.
         /// NOTE: Calling SetupPython multiple times will add the install location to the path many times,
         /// potentially causing the environment variable to overflow.
         /// </summary>
@@ -370,12 +372,14 @@ for modname,mod in sys.modules.copy().items():
 
                     Assembly wheelsAssembly = context.LoadFromAssemblyPath(Path.Join(Path.GetDirectoryName(assembly.Location), "DSPythonNet3Wheels.dll"));
 
-                    string sitePkgsPath = Path.Combine(Python.Included.Installer.EmbeddedPythonHome, "Lib", "site-packages");
-                    Directory.CreateDirectory(sitePkgsPath);
+                    string sitePkgs = Path.Combine(Python.Included.Installer.EmbeddedPythonHome, "Lib", "site-packages");
+                    var normalizedBase = Path.GetFullPath(sitePkgs) + Path.DirectorySeparatorChar;
+
+                    Directory.CreateDirectory(sitePkgs);
 
                     List<string> pipWheelInstall = new List<string>();
 
-                    // Extract noo-pip wheels directly from the resource stream
+                    // Extract non-pip wheels directly from the resource stream
                     foreach (var resName in wheelsAssembly.GetManifestResourceNames())
                     {
                         bool isWheel = resName.EndsWith(".whl");
@@ -400,7 +404,16 @@ for modname,mod in sys.modules.copy().items():
                                 {
                                     if (string.IsNullOrEmpty(entry.Name)) continue;
 
-                                    var destPath = Path.Combine(sitePkgsPath, entry.FullName.Replace('/', Path.DirectorySeparatorChar));
+                                    var relPath = entry.FullName.Replace('/', Path.DirectorySeparatorChar);
+                                    var tentative = Path.Combine(sitePkgs, relPath);
+                                    var destPath = Path.GetFullPath(tentative);
+
+                                    if (!destPath.StartsWith(normalizedBase, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        dynamoLogger?.LogWarning($"[PyInit] Skipped suspicious wheel entry: {entry.FullName}", WarningLevel.Mild);
+                                        continue;
+                                    }
+
                                     var destDir = Path.GetDirectoryName(destPath);
                                     if (!string.IsNullOrEmpty(destDir))
                                     {
