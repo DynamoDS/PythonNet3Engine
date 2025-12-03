@@ -30,6 +30,27 @@ namespace DSPythonNet3.Encoders
 
             if (typeof(T).IsGenericType)
             {
+                var genericDef = typeof(T).GetGenericTypeDefinition();
+                var elementType = typeof(T).GetGenericArguments().FirstOrDefault();
+
+                if (elementType != null && (genericDef == typeof(IEnumerable<>) || genericDef == typeof(List<>) || genericDef == typeof(IList<>)))
+                {
+                    using var pyList = PyList.AsList(pyObj);
+                    var listType = typeof(List<>).MakeGenericType(elementType);
+                    var typedList = (IList)Activator.CreateInstance(listType)!;
+
+                    foreach (PyObject item in pyList)
+                    {
+                        using (item)
+                        {
+                            typedList.Add(ConvertGenericItem(item, elementType));
+                        }
+                    }
+
+                    value = (T)typedList;
+                    return true;
+                }
+
                 using (var pyList = PyList.AsList(pyObj))
                 {
                     value = pyList.ToList<T>();
@@ -79,6 +100,22 @@ namespace DSPythonNet3.Encoders
                 return clrObject;
             }
 
+            if (PyInt.IsIntType(item))
+            {
+                using var pyLong = PyInt.AsInt(item);
+                try { return pyLong.ToInt64(); }
+                catch (PythonException ex) when (ex.Message.StartsWith("int too big"))
+                {
+                    return pyLong.ToBigInteger();
+                }
+            }
+
+            if (PyFloat.IsFloatType(item))
+            {
+                using var pyFloat = PyFloat.AsFloat(item);
+                return pyFloat.ToDouble();
+            }
+
             if (PyString.IsStringType(item))
             {
                 return item.AsManagedObject(typeof(string));
@@ -97,13 +134,49 @@ namespace DSPythonNet3.Encoders
             try
             {
                 clrObject = pyObj.GetManagedObject();
-                return clrObject != null;
+                if (clrObject is PyObject || clrObject is null)
+                {
+                    clrObject = null;
+                    return false;
+                }
+                return true;
             }
             catch
             {
                 clrObject = null;
                 return false;
             }
+        }
+
+        private static object ConvertGenericItem(PyObject item, Type elementType)
+        {
+            if (elementType == typeof(object))
+            {
+                return ConvertItem(item);
+            }
+
+            if (TryGetClrObject(item, out var clrObject) && elementType.IsInstanceOfType(clrObject))
+            {
+                return clrObject;
+            }
+
+            if (PyList.IsListType(item) || PyTuple.IsTupleType(item))
+            {
+                // recursively decode nested generics
+                var listType = typeof(List<>).MakeGenericType(elementType);
+                var nestedList = (IList)Activator.CreateInstance(listType)!;
+                using var pyList = PyList.AsList(item);
+                foreach (PyObject child in pyList)
+                {
+                    using (child)
+                    {
+                        nestedList.Add(ConvertGenericItem(child, elementType));
+                    }
+                }
+                return nestedList;
+            }
+
+            return item.AsManagedObject(elementType);
         }
     }
 }
