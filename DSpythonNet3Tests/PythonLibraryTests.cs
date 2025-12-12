@@ -194,5 +194,77 @@ OUT = ws['C2'].value
             var result = DSPythonNet3Evaluator.EvaluatePythonScript(code, empty, empty);
             Assert.That(result, Is.EqualTo(3));
         }
+
+        [Test]
+        public void TestShapelyAvailable()
+        {
+            string code = @"
+from shapely.geometry import Point
+# Circle-like buffer (radius=1) -> area ~= pi; round to 2dp for stability
+area = Point(0,0).buffer(1.0).area
+OUT = round(area, 2)
+";
+            var empty = new ArrayList();
+            var result = DSPythonNet3Evaluator.EvaluatePythonScript(code, empty, empty);
+            Assert.That(result, Is.EqualTo(3.14));
+        }
+
+        [Test]
+        public void TestAlphaShapeAvailable()
+        {
+            string code = @"
+import alphashape
+from shapely.geometry import Point
+pts = [(0,0), (1,0), (1,1), (0,1), (0.5,0.5)]
+alpha = 1.5
+poly = alphashape.alphashape(pts, alpha)
+OUT = poly.is_valid and poly.area > 0
+";
+            var empty = new ArrayList();
+            var result = DSPythonNet3Evaluator.EvaluatePythonScript(code, empty, empty);
+            Assert.That(result, Is.EqualTo(true));
+        }
+
+        [Test]
+        public void TestScikitLearnAvailable()
+        {
+            string code = @"
+from sklearn.cluster import KMeans
+import numpy as np
+X = np.array([[0,0],[0,1],[9,9],[9,8]], dtype=float)
+km = KMeans(n_clusters=2, n_init=5, random_state=0).fit(X)
+OUT = len(set(km.labels_))
+";
+            var empty = new ArrayList();
+            var result = DSPythonNet3Evaluator.EvaluatePythonScript(code, empty, empty);
+            Assert.That(result, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void TestIfcopenshellAvailable()
+        {
+            string code = @"
+import ifcopenshell
+# Simple smoke: module import + version attribute exists
+OUT = hasattr(ifcopenshell, '__version__')
+";
+            var empty = new ArrayList();
+            var result = DSPythonNet3Evaluator.EvaluatePythonScript(code, empty, empty);
+            Assert.That(result, Is.EqualTo(true));
+        }
+
+        [Test]
+        public void TestTabulateAvailable()
+        {
+            string code = @"
+from tabulate import tabulate
+tbl = tabulate([[1,'a'],[2,'b']], headers=['n','c'], tablefmt='plain')
+# Expect two data rows -> 2 newline characters (plain format produces 2 lines)
+OUT = ('1' in tbl) and ('2' in tbl) and ('a' in tbl) and ('b' in tbl)
+";
+            var empty = new ArrayList();
+            var result = DSPythonNet3Evaluator.EvaluatePythonScript(code, empty, empty);
+            Assert.That(result, Is.EqualTo(true));
+        }
     }
 }
