@@ -10,9 +10,10 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<!-- Using `VersionPrefix` allows specifying a `version-suffix` argument when packing for beta releases. -->
-		<VersionPrefix>1.4.4</VersionPrefix>
-		<DynamoPackageVersion>4.0.0-beta2860</DynamoPackageVersion>
+		<!-- This is the version used for created NuGet packages. Using `VersionPrefix` allows specifying a `version-suffix` argument when packing for beta releases. -->
+		<MS_PACKAGE_VERSION Condition="'$(MS_PACKAGE_VERSION)' == ''">0.0.0.0</MS_PACKAGE_VERSION>
+		<VersionPrefix>$(MS_PACKAGE_VERSION)</VersionPrefix>
+		<DynamoPackageVersion>4.0.0.3277</DynamoPackageVersion>
 		<DynamoVersion>4.0</DynamoVersion>
 		
 		<!--Aids in code analysis.-->

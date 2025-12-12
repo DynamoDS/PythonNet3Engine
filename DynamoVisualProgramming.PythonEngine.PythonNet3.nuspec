@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>DynamoVisualProgramming.PythonEngine.PythonNet3</id>
-        <version>0.0.0</version>
+        <version>$version$</version>
         <authors>Autodesk</authors>
         <owners>Autodesk</owners>
         <license type="expression">Apache-2.0</license>
@@ -12,6 +12,7 @@
         <copyright>Copyright Autodesk 2025</copyright>
     </metadata>
     <files>
+        <file src="logo.png" target="content\logo\" />
         <file src="package_output\DSPythonNet3\pkg.json" target="content\manifest\" />
         <file src="package_output\DSPythonNet3\bin\**" target="lib\net10.0\" exclude="**\*.pdb;" />
         <file src="package_output\DSPythonNet3\extra\**" target="lib\net10.0\" exclude="**\*.pdb;" />
