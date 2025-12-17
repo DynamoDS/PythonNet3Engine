@@ -34,11 +34,6 @@ ci_test:
 
 deployment:
   -
-    type: sign
-    files_to_sign:
-      - package_output/DSPythonNet3/**/DSPythonNet3*.dll
-      - package_output/DSPythonNet3/**/Python.*.dll
-  -
     type: customized
     scripts:
       - "pwsh.exe -ExecutionPolicy ByPass -Command Compress-Archive -Path package_output/DSPythonNet3/* -DestinationPath DSPythonNet3.zip"
