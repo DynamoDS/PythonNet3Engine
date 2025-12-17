@@ -5,7 +5,7 @@
 		<Authors>Dynamo</Authors>
 		<Product>Dynamo</Product>
 		<Copyright>Copyright © Autodesk, Inc 2025</Copyright>
-		
+
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -15,11 +15,11 @@
 		<VersionPrefix>$(MS_PACKAGE_VERSION)</VersionPrefix>
 		<DynamoPackageVersion>4.0.0.3277</DynamoPackageVersion>
 		<DynamoVersion>4.0</DynamoVersion>
-		
+
 		<!--Aids in code analysis.-->
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<BuildOutput>$(SolutionDir)\package_output\DSPythonNet3\</BuildOutput>
-    </PropertyGroup>
+	</PropertyGroup>
 </Project>
