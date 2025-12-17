@@ -799,6 +799,61 @@ sys.stdout = DynamoStdOut({0})
         public override event EvaluationFinishedEventHandler EvaluationFinished;
 
         private bool registeredUnwrapMarshaler;
+        private const string ConnectionNodeCompatSentinel = "__dspynet3_connnode_compat__";
+
+        /// <summary>
+        /// Compatibility shim for "node-first" static methods exposed by some Dynamo/Revit libraries.
+        /// In older engines these could be invoked like instance methods (e.g. node.SubNodesOfSize(2)).
+        /// Python.NET 3 binds static methods strictly, so we patch a small set of known APIs to keep
+        /// existing graphs working.
+        /// </summary>
+        private static string ConnectionNodeCompatPatchCode()
+        {
+            return $@"
+import builtins as __builtins__
+try:
+    from AdvanceSteel.ConnectionAutomation.Nodes import ConnectionNode as __ConnectionNode
+except Exception:
+    __ConnectionNode = None
+if __ConnectionNode is not None:
+    if not getattr(__builtins__, '{ConnectionNodeCompatSentinel}', False):
+        def __dspynet3__patch_connnode_instance(__obj):
+            # Attach instance-callable wrappers for node-first static methods.
+            try:
+                if not isinstance(__obj, __ConnectionNode):
+                    return
+                def __subnodes(__n, *args, __obj=__obj, **kwargs):
+                    return __ConnectionNode.SubNodesOfSize(__obj, __n, *args, **kwargs)
+                def __existing(*args, __obj=__obj, **kwargs):
+                    return __ConnectionNode.ExistingConnections(__obj, *args, **kwargs)
+                try:
+                    setattr(__obj, 'SubNodesOfSize', __subnodes)
+                except Exception:
+                    pass
+                try:
+                    setattr(__obj, 'ExistingConnections', __existing)
+                except Exception:
+                    pass
+            except Exception:
+                pass
+        def __dspynet3__walk_and_patch(__x):
+            try:
+                if isinstance(__x, (list, tuple)):
+                    for __i in __x:
+                        __dspynet3__walk_and_patch(__i)
+                else:
+                    __dspynet3__patch_connnode_instance(__x)
+            except Exception:
+                pass
+        setattr(__builtins__, '__dspynet3__walk_and_patch_connnode', __dspynet3__walk_and_patch)
+        setattr(__builtins__, '{ConnectionNodeCompatSentinel}', True)
+    try:
+        __inp = globals().get('IN', None)
+        __builtins__.__dspynet3__walk_and_patch_connnode(__inp)
+    except Exception:
+        pass
+";
+        }
 
         /// <summary>
         /// Called immediately before evaluation starts
@@ -844,6 +899,8 @@ sys.stdout = DynamoStdOut({0})
 
                 registeredUnwrapMarshaler = true;
             }
+
+            scope.Exec(ConnectionNodeCompatPatchCode());
         }
 
         /// <summary>
