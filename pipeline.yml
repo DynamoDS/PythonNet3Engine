@@ -1,11 +1,17 @@
 version: 1.4.6
 pipeline_os: windows
-create_pr_release_to_master: true
+create_pr_release_to_public_master: true
 
 env:
   - GITHUB_ACCESS_TOKEN_ID: github_access_token_acsbuildguy
   - SLACK_QUANTUM_BUILD_CHANNEL : "#dynamo-jenkinsbuild"
   - JENKINS_NODE_WIN: CDA-VS22-DT
+
+jenkins_creds:
+  -
+    type: secretText
+    credentialsId: dynamovisualprogramming_nuget_api_key
+    secretText: API_KEY
 
 code_analysis:
   sonarqube:
@@ -44,3 +50,11 @@ deployment:
     use_dev_pm: false
     outputs:
       - DSPythonNet3.zip
+  -
+    type: nuget
+    custom_api_key: ${API_KEY}
+    nuget_config_file: nuget.config
+    nuspec_files:
+      - DynamoVisualProgramming.PythonEngine.PythonNet3.nuspec
+    package_version_cmd: echo %_PACKAGE_VERSION%
+    destination_source_name: Public Nuget

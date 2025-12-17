@@ -9,6 +9,8 @@ Builds are published to [Jenkins](https://master-5.jenkins.autodesk.com/job/Dyna
 ## Deployment
 
 The repository uses the release branch to deploy to [Dynamo Package Manager](www.dynamopackages.com).
+As well as to public Nuget: https://www.nuget.org/packages/DynamoVisualProgramming.PythonEngine.PythonNet3
+(Make sure to update the binary version in Directory.build.props before releasing and match it to the version that will be deployed after release)
 
 The package `PythonNet3 Engine` is a dynamo package that is consumed by dynamo users using the Package Manager.  The following explains the deployment process to continously push updates to that package.
 
