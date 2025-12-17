@@ -37,19 +37,3 @@ deployment:
     type: customized
     scripts:
       - "pwsh.exe -ExecutionPolicy ByPass -Command Compress-Archive -Path package_output/DSPythonNet3/* -DestinationPath DSPythonNet3.zip"
-  -
-    type: artifacts
-    publish_to_jenkins: true
-    publish_to_artifactory: false
-    publish_to_package_manager: true
-    use_dev_pm: false
-    outputs:
-      - DSPythonNet3.zip
-  -
-    type: nuget
-    custom_api_key: ${API_KEY}
-    nuget_config_file: nuget.config
-    nuspec_files:
-      - DynamoVisualProgramming.PythonEngine.PythonNet3.nuspec
-    package_version_cmd: echo %_PACKAGE_VERSION%
-    destination_source_name: Public Nuget
