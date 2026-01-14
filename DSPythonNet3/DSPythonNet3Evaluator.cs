@@ -351,6 +351,8 @@ for modname,mod in sys.modules.copy().items():
         private static bool isPythonInstalled = false;
         /// <summary>
         /// Makes sure Python is installed on the system and its location added to the path.
+        /// Extracts non-pip wheels directly from the embedded resource stream into site-packages,
+        /// adds a zip-slip guard (normalize & validate paths), and uses pip only for pywin32.
         /// NOTE: Calling SetupPython multiple times will add the install location to the path many times,
         /// potentially causing the environment variable to overflow.
         /// </summary>
@@ -370,21 +372,66 @@ for modname,mod in sys.modules.copy().items():
 
                     Assembly wheelsAssembly = context.LoadFromAssemblyPath(Path.Join(Path.GetDirectoryName(assembly.Location), "DSPythonNet3Wheels.dll"));
 
+                    string sitePkgs = Path.Combine(Python.Included.Installer.EmbeddedPythonHome, "Lib", "site-packages");
+                    var normalizedBase = Path.GetFullPath(sitePkgs) + Path.DirectorySeparatorChar;
+
+                    Directory.CreateDirectory(sitePkgs);
+
                     List<string> pipWheelInstall = new List<string>();
-                    await Task.WhenAll(wheelsAssembly.GetManifestResourceNames().Where(x =>
+
+                    // Extract non-pip wheels directly from the resource stream
+                    foreach (var resName in wheelsAssembly.GetManifestResourceNames())
                     {
-                        bool isWheel = x.Contains(".whl");
-                        if (isWheel && x.Contains("pywin32-"))
+                        bool isWheel = resName.EndsWith(".whl");
+                        if (!isWheel) continue;
+
+                        if (resName.Contains("pywin32-"))
                         {
-                            pipWheelInstall.Add(x);
-                            return false;
+                            pipWheelInstall.Add(resName);
+                            continue;
                         }
 
-                        return isWheel;
-                    }).Select(wheel => Python.Included.Installer.InstallWheel(wheelsAssembly, wheel))).ConfigureAwait(false);
+                        using (var stream = wheelsAssembly.GetManifestResourceStream(resName))
+                        {
+                            if (stream == null || stream.Length == 0)
+                            {
+                                continue;
+                            }
+
+                            using (var zip = new System.IO.Compression.ZipArchive(stream, System.IO.Compression.ZipArchiveMode.Read, false))
+                            {
+                                foreach (var entry in zip.Entries)
+                                {
+                                    if (string.IsNullOrEmpty(entry.Name)) continue;
+
+                                    var relPath = entry.FullName.Replace('/', Path.DirectorySeparatorChar);
+                                    var tentative = Path.Combine(sitePkgs, relPath);
+                                    var destPath = Path.GetFullPath(tentative);
+
+                                    if (!destPath.StartsWith(normalizedBase, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        dynamoLogger?.LogWarning($"[PyInit] Skipped suspicious wheel entry: {entry.FullName}", WarningLevel.Mild);
+                                        continue;
+                                    }
+
+                                    var destDir = Path.GetDirectoryName(destPath);
+                                    if (!string.IsNullOrEmpty(destDir))
+                                    {
+                                        Directory.CreateDirectory(destDir);
+                                    }
+
+                                    using (var inStream = entry.Open())
+                                    using (var outStream = new FileStream(destPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                                    {
+                                        await inStream.CopyToAsync(outStream).ConfigureAwait(false);
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     foreach (var pipWheelResource in pipWheelInstall)
-                    {                        
+                    {
                         var pipWheelName = pipWheelResource.Remove(0, "DSPythonNet3Wheels.Resources.".Count());
                         string wheelPath = Path.Combine(Python.Included.Installer.EmbeddedPythonHome, "Lib", pipWheelName);
                         using (Stream? stream = wheelsAssembly.GetManifestResourceStream(pipWheelResource))
