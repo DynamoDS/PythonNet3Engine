@@ -14,7 +14,7 @@
 		<PackageReference Include="DynamoVisualProgramming.Core" Version="$(DynamoPackageVersion)" ExcludeAssets="runtime" />
 		<PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="$(DynamoPackageVersion)" ExcludeAssets="runtime" />
 		<PackageReference Include="Python.Included" Version="3.11.6" />
-		<PackageReference Include="Autodesk.pythonnet" Version="3.1.0-preview*" />
+		<PackageReference Include="Autodesk.pythonnet" Version="3.1.1-preview*" /> 
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Update="Properties\Resources.Designer.cs">
@@ -41,6 +41,18 @@
 	<ItemGroup>
 		<ProjectReference Include="..\DSPythonNet3Wheels\DSPythonNet3Wheels.csproj" />
 	</ItemGroup>
+	<!-- Prevent transitive pythonnet from dropping its Python.Runtime.dll while keeping compile assets -->
+	<ItemGroup>
+		<PackageReference Update="pythonnet" ExcludeAssets="all" />
+	</ItemGroup>
+
+	<!-- As a safeguard, remove any Python.Runtime coming from NuGet packages from being copied to output -->
+	<Target Name="RemoveTransitivePythonNetRuntime" AfterTargets="ResolveReferences">
+		<ItemGroup>
+			<ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.FileName)' == 'Python.Runtime' and $([System.String]::Copy('%(ReferenceCopyLocalPaths.Identity)').ToLower().Contains('nuget\\packages\\pythonnet'))" />
+		</ItemGroup>
+	</Target>
+
 	<ItemGroup>
 		<None Update="pkg.json">
 			<TargetPath>..\%(Filename)%(Extension)</TargetPath>
