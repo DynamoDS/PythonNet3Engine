@@ -1,5 +1,7 @@
 # DSPythonNet3
 
+[![Build Status](https://c007.cloudbees-ci.autodesk.com/buildStatus/icon?job=DYNCI%2FDynamo%2FPythonNet3Engine%2Fmaster)](https://c007.cloudbees-ci.autodesk.com/job/DYNCI/job/Dynamo/job/PythonNet3Engine/job/master/)
+
 This project builds the DSPythonNet3 dynamo python engine package.
 
 Building the project will output files in `package_output` that can be used to ship as a Dynamo package.
